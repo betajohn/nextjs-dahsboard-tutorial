@@ -1,12 +1,81 @@
-const { db } = require('@vercel/postgres');
+//const { db } = require('@vercel/postgres');
+import dbConnect from '@/app/lib/database/dbConnect';
+import { InvoiceModel } from '@/app/lib/database/models/Invoices';
+import { CustomerModel } from '@/app/lib/database/models/Customers';
+import { Customer } from '@/app/lib/definitions';
 const {
   invoices,
   customers,
   revenue,
   users,
 } = require('../app/lib/placeholder-data.js');
-const bcrypt = require('bcrypt');
 
+dbConnect();
+
+export async function seedInvoices() {
+  const finalData = [];
+
+  invoices.forEach((invoice) => {
+    const x = customers.find((customer) => customer.id === invoice.customer_id);
+    finalData.push({
+      customer: {
+        customer_id: x.id,
+        name: x.name,
+        email: x.email,
+        image_url: x.image_url,
+      },
+      _id: invoice._id,
+      amount: invoice.amount,
+      status: invoice.status,
+      date: new Date(invoice.date),
+    });
+  });
+
+  try {
+    await InvoiceModel.create(finalData);
+    console.log('Invoices have been seeded successfully');
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function seedCustomers() {
+  const finalCustomers = [];
+
+  customers.forEach((c) => {
+    const invData = invoices.filter((x) => x.customer_id === c.id);
+    const customerInvoices = [];
+    invData.forEach((i) => {
+      customerInvoices.push({
+        invoice_id: i._id,
+        amount: i.amount,
+      });
+    });
+    console.log('cusotmer invoices -------------');
+    console.log(customerInvoices);
+    const newCustomer = {
+      id: c.id,
+      name: c.name,
+      email: c.email,
+      image_url: c.image_url,
+      invoices: customerInvoices,
+    };
+    finalCustomers.push(newCustomer);
+  });
+  console.log(finalCustomers);
+
+  try {
+    CustomerModel.create(finalCustomers);
+    console.log('customers have been successfully seeded');
+  } catch (error) {
+    console.error('Error seeding customers:', error);
+    throw error;
+  }
+}
+
+//const bcrypt = require('bcrypt');
+
+/*
 async function seedUsers(client) {
   try {
     await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
@@ -177,3 +246,4 @@ main().catch((err) => {
     err,
   );
 });
+*/
