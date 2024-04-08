@@ -95,6 +95,8 @@ export async function fetchCardData() {
     ]);
     console.log('---fetching data');
     console.log(data);
+    console.log('--mongodb uri');
+    console.log(process.env.MONGODB_URI);
 
     const numberOfInvoices = data[0];
     const numberOfCustomers = data[1];
