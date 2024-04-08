@@ -51,13 +51,16 @@ If you are using React Server Components (fetching data on the server), you can 
 
 ## Databse Queries and other network requests
 
-### Request waterfall
+### What are request waterfalls? A consecuence of await
+
+When doing multiple db requests for the dashboard page (a request for every dashboard card) The data requests are unintentionally blocking each other, creating a request waterfall.
 
 ```text
-When using promise.all() The data requests are unintentionally blocking each other, creating a request waterfall.
-By default, Next.js prerenders routes to improve performance, this is called Static Rendering. So if your data changes, it won't be reflected in your dashboard.
+For example, we need to wait for fetchRevenue() to execute before fetchLatestInvoices() can start running, and so on.
+```
 
-What are request waterfalls?
+```js
+What are request waterfalls? -> await causes it
 A "waterfall" refers to a sequence of network requests that depend on the completion of previous requests. In the case of data fetching, each request can only begin once the previous request has returned data.
 
 This pattern is not necessarily bad. There may be cases where you want waterfalls because you want a condition to be satisfied before you make the next request. For example, you might want to fetch a user's ID and profile information first. Once you have the ID, you might then proceed to fetch their list of friends. In this case, each request is contingent on the data returned from the previous request.
@@ -67,19 +70,25 @@ However, this behavior can also be unintentional and impact performance.
 
 ### Parallel data fetching
 
-```text
-A common way to avoid waterfalls is to initiate all data requests at the same time - in parallel.
+> A common way to avoid waterfalls is to initiate all data requests at the same time - in parallel.
 
+```text
 In JavaScript, you can use the Promise.all() or Promise.allSettled() functions to initiate all promises at the same time.
 
 By using this pattern, you can:
-Start executing all data fetches at the same time, which can lead to performance gains.
-Use a native JavaScript pattern that can be applied to any library or framework.
+- Start executing all data fetches at the same time, which can lead to performance gains.
+- Use a native JavaScript pattern that can be applied to any library or framework.
 
 However, there is one disadvantage of relying only on this JavaScript pattern: what happens if one data request is slower than all the others?
 ```
 
 ## Static and Dynamic Rendering
+
+### Prerendering
+
+By default, Next.js prerenders routes to improve performance, this is called Static Rendering. So if your data changes, it won't be reflected in your dashboard.
+
+> Prerendering is only noticeable in production!
 
 ```text
 The dashboard is static, so any data updates will not be reflected on your application.
@@ -92,9 +101,9 @@ With static rendering, data fetching and rendering happens on the server at buil
 
 Whenever a user visits your application, the cached result is served. There are a couple of benefits of static rendering:
 
-Faster Websites - Prerendered content can be cached and globally distributed. This ensures that users around the world can access your website's content more quickly and reliably.
-Reduced Server Load - Because the content is cached, your server does not have to dynamically generate content for each user request.
-SEO - Prerendered content is easier for search engine crawlers to index, as the content is already available when the page loads. This can lead to improved search engine rankings.
+- Faster Websites: Prerendered content can be cached and globally distributed. This ensures that users around the world can access your website's content more quickly and reliably.
+- Reduced Server Load: Because the content is cached, your server does not have to dynamically generate content for each user request.
+- SEO: Prerendered content is easier for search engine crawlers to index, as the content is already available when the page loads. This can lead to improved search engine rankings.
 Static rendering is useful for UI with no data or data that is shared across users, such as a static blog post or a product page. It might not be a good fit for a dashboard that has personalized data that is regularly updated.
 
 The opposite of static rendering is dynamic rendering.
@@ -105,9 +114,9 @@ The opposite of static rendering is dynamic rendering.
 ```text
 With dynamic rendering, content is rendered on the server for each user at request time (when the user visits the page). There are a couple of benefits of dynamic rendering:
 
-Real-Time Data - Dynamic rendering allows your application to display real-time or frequently updated data. This is ideal for applications where data changes often.
-User-Specific Content - It's easier to serve personalized content, such as dashboards or user profiles, and update the data based on user interaction.
-Request Time Information - Dynamic rendering allows you to access information that can only be known at request time, such as cookies or the URL search parameters.
+- Real-Time Data: Dynamic rendering allows your application to display real-time or frequently updated data. This is ideal for applications where data changes often.
+- User-Specific Content: It's easier to serve personalized content, such as dashboards or user profiles, and update the data based on user interaction.
+- Request Time Information: Dynamic rendering allows you to access information that can only be known at request time, such as cookies or the URL search parameters.
 ```
 
 ### Making components and functions dynamic

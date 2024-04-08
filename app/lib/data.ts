@@ -2,7 +2,6 @@ import dbConnect from '@/app/lib/database/dbConnect';
 import { RevenueModel } from '@/app/lib/database/models/Revenues';
 import { InvoiceModel } from '@/app/lib/database/models/Invoices';
 import { CustomerModel } from '@/app/lib/database/models/Customers';
-
 import { sql } from '@vercel/postgres';
 import {
   CustomerField,
@@ -14,10 +13,12 @@ import {
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { unstable_noStore as noStore } from 'next/cache';
 
 await dbConnect();
 
 export async function fetchRevenue() {
+  noStore();
   // Add noStore() here to prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
 
@@ -43,6 +44,7 @@ export async function fetchRevenue() {
 }
 
 export async function fetchLatestInvoices() {
+  noStore();
   try {
     const data = await InvoiceModel.find().sort({ date: -1 }).limit(5).exec();
 
@@ -67,6 +69,7 @@ export async function fetchLatestInvoices() {
 }
 
 export async function fetchCardData() {
+  noStore();
   try {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
@@ -93,10 +96,6 @@ export async function fetchCardData() {
       customerCountPromise,
       invoiceStatusCount,
     ]);
-    console.log('---fetching data');
-    console.log(data);
-    console.log('--mongodb uri');
-    console.log(process.env.MONGODB_URI);
 
     const numberOfInvoices = data[0];
     const numberOfCustomers = data[1];
