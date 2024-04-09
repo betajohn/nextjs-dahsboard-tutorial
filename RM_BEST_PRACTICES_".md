@@ -136,10 +136,16 @@ export async function fetchRevenue() {
 ```
 
 > your whole page is blocked while the data is being fetched.
-> Which brings us to a common challenge developers have to solve:
-> With dynamic rendering, your application is only as fast as your slowest data fetch.
+
+```text
+ Which brings us to a common challenge developers have to solve:
+
+ With dynamic rendering, your application is only as fast as your slowest data fetch.
+```
 
 ## Streaming
+
+> Let's look at how you can improve the user experience when there are slow data requests.
 
 ### What is streaming?
 
@@ -158,7 +164,7 @@ At the page level, with the loading.tsx file.
 For specific components, with <Suspense>.
 ```
 
-### loading.tsx
+### Streaming a whole page with loading.tsx
 
 ```text
 -loading.tsx is a special Next.js file built on top of Suspense, it allows you to create fallback UI to show as a replacement while page content loads.
@@ -185,8 +191,18 @@ Suspense allows you to defer rendering parts of your application until some cond
 
 ### Deciding where to place your Suspense boundaries
 
+Don't worry. There isn't a right answer.
+
+- You could stream the whole page like we did with loading.tsx... but that may lead to a longer loading time if one of the components has a slow data fetch.
+- You could stream every component individually... but that may lead to UI popping into the screen as it becomes ready.
+- You could also create a staggered effect by streaming page sections. But you'll need to create wrapper components.
+
 ```text
+Where you place your suspense boundaries will vary depending on your application.
+
 It's good practice to move your data fetches down to the components that need it, and then wrap those components in Suspense. But there is nothing wrong with streaming the sections or the whole page if that's what your application needs.
+
+Don't be afraid to experiment with Suspense and see what works best
 ```
 
 > Currently, if you call a dynamic function inside your route (e.g. noStore(), cookies(), etc), your entire route becomes dynamic.

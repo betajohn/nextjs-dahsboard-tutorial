@@ -19,6 +19,9 @@ await dbConnect();
 
 export async function fetchRevenue() {
   noStore();
+
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
   // Add noStore() here to prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
 
@@ -35,7 +38,11 @@ export async function fetchRevenue() {
 
     //return data.rows;
     //const data = await RevenueModel.find({});
+    console.log('Fetching revenue data...');
+
     let data = await RevenueModel.find({});
+    console.log('Data fetch completed after 3 seconds.');
+
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -45,6 +52,7 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   noStore();
+  await new Promise((resolve) => setTimeout(resolve, 10000));
   try {
     const data = await InvoiceModel.find().sort({ date: -1 }).limit(5).exec();
 
@@ -70,6 +78,8 @@ export async function fetchLatestInvoices() {
 
 export async function fetchCardData() {
   noStore();
+
+  await new Promise((resolve) => setTimeout(resolve, 7000));
   try {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
