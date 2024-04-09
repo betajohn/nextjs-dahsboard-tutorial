@@ -20,8 +20,6 @@ await dbConnect();
 export async function fetchRevenue() {
   noStore();
 
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-
   // Add noStore() here to prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
 
@@ -79,7 +77,6 @@ export async function fetchLatestInvoices() {
 export async function fetchCardData() {
   noStore();
 
-  await new Promise((resolve) => setTimeout(resolve, 7000));
   try {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
