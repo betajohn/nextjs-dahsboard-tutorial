@@ -50,7 +50,6 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   noStore();
-  await new Promise((resolve) => setTimeout(resolve, 10000));
   try {
     const data = await InvoiceModel.find().sort({ date: -1 }).limit(5).exec();
 
