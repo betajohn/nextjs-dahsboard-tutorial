@@ -127,6 +127,7 @@ export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
 ) {
+  console.log('fetchFilteredInvoices - db called');
   let n: number;
   if (!Number(query)) {
     n = -9999;
@@ -185,7 +186,24 @@ export async function fetchFilteredInvoices(
 }
 
 export async function fetchInvoicesPages(query: string) {
+  console.log('fetchInvoicesPages - db called');
   try {
+    let n: number;
+    if (!Number(query)) {
+      n = -9999;
+    } else {
+      n = Number(query);
+    }
+
+    const invoices = await InvoiceModel.find({
+      $or: [
+        { 'customer.name': { $regex: query, $options: 'i' } },
+        { 'customer.email': { $regex: query, $options: 'i' } },
+        { amount: n },
+        { status: { $regex: query, $options: 'i' } },
+      ],
+    });
+    /*
     const count = await sql`SELECT COUNT(*)
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
@@ -196,8 +214,8 @@ export async function fetchInvoicesPages(query: string) {
       invoices.date::text ILIKE ${`%${query}%`} OR
       invoices.status ILIKE ${`%${query}%`}
   `;
-
-    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    */
+    const totalPages = Math.ceil(Number(invoices.length) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);

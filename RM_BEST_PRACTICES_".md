@@ -227,9 +227,9 @@ However, since you're not using state, you can use defaultValue. This means the 
 
 ### searchParams
 
-```text
-Page components accept a prop called searchParams, so you can pass the current URL params to the <Table> component.
+Page components accept a prop called searchParams, so you can pass the current URL params to children components.
 
+```text
 When to use the useSearchParams() hook vs. the searchParams prop?
 
 You might have noticed you used two different ways to extract search params. Whether you use one or the other depends on whether you're working on the client or the server.
@@ -241,9 +241,11 @@ As a general rule, if you want to read the params from the client, use the useSe
 
 ### Debouncing
 
-```text
-Debouncing is a programming practice that limits the rate at which a function can fire. In our case, you only want to query the database when the user has stopped typing.
+> Debouncing is a programming practice that limits the rate at which a function can fire.
 
+In our case, you only want to query the database when the user has stopped typing.
+
+```text
 How Debouncing Works:
 
 1-.Trigger Event: When an event that should be debounced (like a keystroke in the search box) occurs, a timer starts.
