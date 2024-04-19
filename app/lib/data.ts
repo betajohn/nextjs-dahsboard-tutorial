@@ -127,6 +127,32 @@ export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
 ) {
+  let n: number;
+  if (!Number(query)) {
+    n = -9999;
+  } else {
+    n = Number(query);
+  }
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const invoices = await InvoiceModel.find({
+      $or: [
+        { 'customer.name': { $regex: query, $options: 'i' } },
+        { 'customer.email': { $regex: query, $options: 'i' } },
+        { amount: n },
+        { status: { $regex: query, $options: 'i' } },
+      ],
+    })
+      .sort({ date: -1 })
+      .skip(offset)
+      .limit(ITEMS_PER_PAGE);
+
+    return invoices;
+  } catch (error) {
+    console.log(error);
+  }
+  /*
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -155,7 +181,7 @@ export async function fetchFilteredInvoices(
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
-  }
+  }*/
 }
 
 export async function fetchInvoicesPages(query: string) {

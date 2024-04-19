@@ -84,6 +84,79 @@ output = [
 This aggregation pipeline does the following:
 
 1.- $group: Groups documents by the 'status' field and calculates the count and sum of amounts for each group.
+
 2.- $match: Filters the groups to only include those with 'paid' or 'pending' status.
 
 This will return the counts for both 'paid' and 'pending' status in a single query result.
+
+## Common Queries
+
+### Find by multiple criteria using the $or operator
+
+```ts
+const invoices = await InvoiceModel.find({
+  $or: [{ 'query here' },{ 'query here' }, ],
+});
+```
+
+### Return any documents where the specified field contains the query, case insensitive.
+
+```js
+const userInput = 'angel'
+Model.find({ 'customer.name': { $regex: userInput, $options: 'i' })
+
+//--explanation--
+ $regex: userInput  //This part specifies the regular expression to match the text string
+
+$options: 'i'// This specifies case-insensitive matching, so it will match "angel", "Angel", "aNgEl", etc.
+```
+
+### find() by date
+
+```ts
+const startOfDay = new Date(2024,04,19,0,0,0);
+
+const endOfDay = new Date(2024,04,20,0,0,0);// or new Date(2024,04,19,23,59,59) - but milliseconds?
+
+const documents = await YourModel.find({
+  createdAt: {
+    $gte: startOfDay,
+    $lt: endOfDay
+  })
+```
+
+### sort() the resulting documents after a find()
+
+Sorting by creation date:
+
+```ts
+const userInput = 'angel'
+const sortOrder = anotherUserInput // Replace sortOrder with 1 for ascending or -1 for descending
+const documents = Model.find({ 'customer.name': { $regex: userInput, $options: 'i' })
+                       .sort({ createdAt: sortOrder }); // sorting by creation date
+```
+
+### limit() the number of documents after a find()
+
+```ts
+const userInput = 'angel'
+const sortOrder = anotherUserInput // Replace sortOrder with 1 for ascending or -1 for descending
+const limit = 10 // pagesize
+const documents = Model.find({ 'customer.name': { $regex: userInput, $options: 'i' })
+                       .sort({ createdAt: sortOrder }) // sorting by creation date
+                       .limit(limit)
+```
+
+### skip() a number of documents after a find()
+
+```ts
+const userInput = 'angel'
+const sortOrder = anotherUserInput // Replace sortOrder with 1 for ascending or -1 for descending
+const limit = 10 // pagesize
+const pageNuber = 2 // example for second page of results
+const documents = Model.find({ 'customer.name': { $regex: userInput, $options: 'i' })
+                       .sort({ createdAt: sortOrder }) // sorting by creation date
+                       .limit(limit)
+                       .skip((pageNumber-1)*limit); // page 1 will skip (1-1)*10 = 0 documents
+                                                    // page 2 will skip (2-1)*10= 10 documents
+```

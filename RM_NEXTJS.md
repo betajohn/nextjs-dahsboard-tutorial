@@ -17,3 +17,13 @@ You can use the root layout to modify your <html> and <body> tags, and add metad
 ### Non-async promises can cause hydration errors
 
 If you forgot to await for the promise that returns info you will use in your UI.
+
+## URL search params
+
+benefits of implementing search with URL params:
+
+- Bookmarkable and Shareable URLs: Since the search parameters are in the URL, users can bookmark the current state of the application, including their search queries and filters, for future reference or sharing.
+
+- Server-Side Rendering and Initial Load: URL parameters can be directly consumed on the server to render the initial state, making it easier to handle server rendering.
+
+- Analytics and Tracking: Having search queries and filters directly in the URL makes it easier to track user behavior without requiring additional client-side logic.
