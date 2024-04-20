@@ -89,7 +89,7 @@ This aggregation pipeline does the following:
 
 This will return the counts for both 'paid' and 'pending' status in a single query result.
 
-## Common Queries
+## Model.find()
 
 ### Find by multiple criteria using the $or operator
 
@@ -159,4 +159,104 @@ const documents = Model.find({ 'customer.name': { $regex: userInput, $options: '
                        .limit(limit)
                        .skip((pageNumber-1)*limit); // page 1 will skip (1-1)*10 = 0 documents
                                                     // page 2 will skip (2-1)*10= 10 documents
+```
+
+## Model.aggregate(arrayOfAggregationStages)
+
+Returns
+
+- an array of documents if there is 1 or more matches
+- an empty array if no matches
+
+### Create multiple aggregation pipelines within a single stage with the $facet stage
+
+```ts
+const result = await InvoiceModel.aggregate([
+  {
+    $match: {
+      $or: [
+        { 'customer.name': { $regex: query, $options: 'i' } },
+        { 'customer.email': { $regex: query, $options: 'i' } },
+        { amount: n },
+        { status: { $regex: query, $options: 'i' } },
+      ],
+    },
+  }, // up to this point the result is an array of documents with length of >=0 )
+  //We will create 2 new aggregations from the filtered results
+  {
+    $facet: {
+      unpaginatedTotal: [
+        {
+          $count: 'total_documents',
+        },
+      ],
+      currentPageResults: [
+        { $sort: { date: -1 } },
+        { $skip: offset },
+        { $limit: ITEMS_PER_PAGE },
+      ],
+    },
+  },
+  // up tp this point the result is
+  //[ { unpaginatedTotal: [15], currentPageResults: [doc1, doc2, doc3...] } ]
+]);
+```
+
+### Generate your custom document result with $project
+
+> [!TIP] TIP: $arrayElemAt
+> use $arrayElemAt to get a document in a specific array position
+>
+> ```js
+> {
+>   $arrayElemAt: [path_to_array, index];
+> }
+> ```
+
+```ts
+const result = await InvoiceModel.aggregate([
+  {
+    $match: {
+      $or: [
+        { 'customer.name': { $regex: query, $options: 'i' } },
+        { 'customer.email': { $regex: query, $options: 'i' } },
+        { amount: n },
+        { status: { $regex: query, $options: 'i' } },
+      ],
+    },
+  }, // up to this point the result is an array of documents with length of >=0 )
+  //We will create 2 new aggregations from the filtered results
+  {
+    $facet: {
+      unpaginatedTotal: [
+        {
+          $count: 'total_documents',
+        },
+      ],
+      currentPageResults: [
+        { $sort: { date: -1 } },
+        { $skip: offset },
+        { $limit: ITEMS_PER_PAGE },
+      ],
+    },
+  },
+  // up tp this point the result is
+  //[ {unpaginatedTotal: [{total_documents:15}], currentPageResults: [{doc1}, {doc2}, {doc3}...]} ]
+  {
+    $project: {
+      unpaginatedTotal: { $arrayElemAt: ['$unpaginatedTotal', 0] },
+      currentPageResults: '$currentPageResults',
+    },
+  },
+  // up to this point the result is
+  //[ {unpaginatedTotal:{total_documents:15}, currentPageResults: [{doc1}, {doc2}, {doc3}...]} ]
+  {
+    $project: {
+      unpaginatedTotal: '$unpaginatedTotal.total_documents',
+      currentPageResults: '$currentPageResults',
+    },
+  },
+  // up to this point the result is
+  //[ {unpaginatedTotal:15, currentPageResults: [{doc1}, {doc2}, {doc3}...]} ]
+]);
 ```

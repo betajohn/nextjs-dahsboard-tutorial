@@ -223,6 +223,66 @@ export async function fetchInvoicesPages(query: string) {
   }
 }
 
+export async function fetchInvoices(query: string, currentPage: number) {
+  let n: number;
+  if (!Number(query)) {
+    n = -9999;
+  } else {
+    n = Number(query);
+  }
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const result = await InvoiceModel.aggregate([
+      {
+        $match: {
+          $or: [
+            { 'customer.name': { $regex: query, $options: 'i' } },
+            { 'customer.email': { $regex: query, $options: 'i' } },
+            { amount: n },
+            { status: { $regex: query, $options: 'i' } },
+          ],
+        },
+      },
+      {
+        $facet: {
+          unpaginatedTotal: [
+            {
+              $count: 'total_documents',
+            },
+          ],
+          currentPageResults: [
+            { $sort: { date: -1 } },
+            { $skip: offset },
+            { $limit: ITEMS_PER_PAGE },
+          ],
+        },
+      },
+      {
+        $project: {
+          unpaginatedTotal: { $arrayElemAt: ['$unpaginatedTotal', 0] },
+          currentPageResults: '$currentPageResults',
+        },
+      },
+      {
+        $project: {
+          unpaginatedTotal: '$unpaginatedTotal.total_documents',
+          currentPageResults: '$currentPageResults',
+        },
+      },
+    ]);
+
+    return {
+      invoices: result[0].currentPageResults,
+      totalPages: result[0].unpaginatedTotal
+        ? Math.ceil(Number(result[0].unpaginatedTotal) / ITEMS_PER_PAGE)
+        : 1,
+    };
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function fetchInvoiceById(id: string) {
   try {
     const data = await sql<InvoiceForm>`
